@@ -22,12 +22,17 @@ jobs:
       - name: Ensure Gradle wrapper exists
         run: |
           if [ ! -f "./gradlew" ]; then
-            gradle wrapper --gradle-version=8.7
+            if [ -f "gradle/wrapper/gradle-wrapper.properties" ]; then
+              V=$(grep -oP 'gradle-\K[0-9.]+(?=-bin|-all)' gradle/wrapper/gradle-wrapper.properties)
+              gradle wrapper --gradle-version="$V"
+            else
+              gradle wrapper
+            fi
           fi
           chmod +x gradlew
 
       - name: Build debug APK
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug --stacktrace
 
       - name: Create Release with APK
         uses: softprops/action-gh-release@v2
