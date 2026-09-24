@@ -1,0 +1,6 @@
+{
+  "name": "Live TV",
+  "description": "Ultra-simple Live TV application designed for elderly users with one-touch channel playing and TV remote navigation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

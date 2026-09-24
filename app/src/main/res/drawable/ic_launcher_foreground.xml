@@ -1,0 +1,37 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Center 66dp safe zone (21 to 87) -->
+    <!-- TV Antenna -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M38,28 L54,42 L70,28" />
+    <!-- TV Outer Body -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M30,42 h48 c3.3,0 6,2.7 6,6 v26 c0,3.3 -2.7,6 -6,6 h-48 c-3.3,0 -6,-2.7 -6,-6 v-26 c0,-3.3 2.7,-6 6,-6 z" />
+    <!-- TV Inner Screen (cutout in dark) -->
+    <path
+        android:fillColor="#111111"
+        android:pathData="M34,47 h36 c1.7,0 3,1.3 3,3 v16 c0,1.7 -1.3,3 -3,3 h-36 c-1.7,0 -3,-1.3 -3,-3 v-16 c0,-1.7 1.3,-3 3,-3 z" />
+    <!-- Play Triangle Inside Screen -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,53 L58,58 L48,63 Z" />
+    <!-- Dial knobs on right of screen -->
+    <path
+        android:fillColor="#111111"
+        android:pathData="M78,51 a2,2 0 1,1 0.001,0 z M78,59 a2,2 0 1,1 0.001,0 z M78,67 a2,2 0 1,1 0.001,0 z" />
+    <!-- TV Stand Legs -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M38,80 L34,85 M70,80 L74,85" />
+</vector>
