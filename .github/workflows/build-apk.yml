@@ -20,9 +20,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Bootstrap Gradle wrapper if missing
         # Repo currently has only gradle/wrapper/*.properties, no gradlew jar.
         # Download official Gradle and generate wrapper so ./gradlew always works.
