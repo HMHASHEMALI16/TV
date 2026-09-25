@@ -47,6 +47,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        // Restore last-watched channel for 70+ user: reopen where they left off.
+        val prefs = getSharedPreferences("sn_tv_prefs", MODE_PRIVATE)
+        selectedIndex = prefs.getInt("last_channel_index", 0)
+
         channelRepository = ChannelRepository(applicationContext)
         playerManager = PlayerManager(applicationContext)
 
@@ -123,6 +127,9 @@ class MainActivity : ComponentActivity() {
     private fun playChannelAtIndex(index: Int) {
         if (channelList.isEmpty()) return
         selectedIndex = index.coerceIn(0, channelList.size - 1)
+        // Remember for next app start (elderly user should not lose place)
+        getSharedPreferences("sn_tv_prefs", MODE_PRIVATE)
+            .edit().putInt("last_channel_index", selectedIndex).apply()
         val channel = channelList[selectedIndex]
         currentAppState = AppState.VIDEO_PLAYER
         playerManager.playChannel(channel)
@@ -141,6 +148,8 @@ class MainActivity : ComponentActivity() {
         } else {
             (selectedIndex - 1 + count) % count
         }
+        getSharedPreferences("sn_tv_prefs", MODE_PRIVATE)
+            .edit().putInt("last_channel_index", selectedIndex).apply()
         val nextChannel = channelList[selectedIndex]
         playerManager.playChannel(nextChannel)
     }
@@ -158,7 +167,8 @@ class MainActivity : ComponentActivity() {
                     KeyEvent.KEYCODE_DPAD_UP,
                     KeyEvent.KEYCODE_DPAD_LEFT,
                     KeyEvent.KEYCODE_CHANNEL_UP,
-                    KeyEvent.KEYCODE_PAGE_UP -> {
+                    KeyEvent.KEYCODE_PAGE_UP,
+                    KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
                         selectedIndex = (selectedIndex - 1 + count) % count
                         return true
                     }
@@ -167,7 +177,8 @@ class MainActivity : ComponentActivity() {
                     KeyEvent.KEYCODE_DPAD_DOWN,
                     KeyEvent.KEYCODE_DPAD_RIGHT,
                     KeyEvent.KEYCODE_CHANNEL_DOWN,
-                    KeyEvent.KEYCODE_PAGE_DOWN -> {
+                    KeyEvent.KEYCODE_PAGE_DOWN,
+                    KeyEvent.KEYCODE_MEDIA_NEXT -> {
                         selectedIndex = (selectedIndex + 1) % count
                         return true
                     }
@@ -188,7 +199,8 @@ class MainActivity : ComponentActivity() {
                     KeyEvent.KEYCODE_DPAD_UP,
                     KeyEvent.KEYCODE_DPAD_LEFT,
                     KeyEvent.KEYCODE_CHANNEL_UP,
-                    KeyEvent.KEYCODE_PAGE_UP -> {
+                    KeyEvent.KEYCODE_PAGE_UP,
+                    KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
                         changeChannel(isNext = false)
                         return true
                     }
@@ -197,7 +209,8 @@ class MainActivity : ComponentActivity() {
                     KeyEvent.KEYCODE_DPAD_DOWN,
                     KeyEvent.KEYCODE_DPAD_RIGHT,
                     KeyEvent.KEYCODE_CHANNEL_DOWN,
-                    KeyEvent.KEYCODE_PAGE_DOWN -> {
+                    KeyEvent.KEYCODE_PAGE_DOWN,
+                    KeyEvent.KEYCODE_MEDIA_NEXT -> {
                         changeChannel(isNext = true)
                         return true
                     }

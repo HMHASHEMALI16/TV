@@ -36,14 +36,15 @@ fun HomeScreen(
     // Keep the focused channel visible as user moves through the list
     LaunchedEffect(selectedIndex) {
         if (channels.isNotEmpty() && selectedIndex in channels.indices) {
+            // scrollOffset must be >= 0 (negative crashes). 0 = snap to top.
             listState.animateScrollToItem(
                 index = selectedIndex,
-                scrollOffset = -120
+                scrollOffset = 0
             )
         }
     }
 
-    // Direct list of channels with serial numbers only (1, 2, 3...) - No heading, No TV names
+    // Super simple list: ONLY 1,2,3... No names, no headings. For 70+ user.
     LazyColumn(
         state = listState,
         modifier = modifier
@@ -73,24 +74,23 @@ private fun ChannelNumberRow(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    // Ultra high contrast: Selected is Black bg + White text; Normal is White bg + Black text
+    // Ultra simple: Black = selected, White = normal. Only BIG number.
     val backgroundColor = if (isSelected) Color.Black else Color.White
     val textColor = if (isSelected) Color.White else Color.Black
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(76.dp)
+            .height(84.dp)
             .background(backgroundColor)
             .clickable(onClick = onClick)
             .padding(horizontal = 32.dp)
             .testTag("channel_row_$serialNumber"),
         contentAlignment = Alignment.CenterStart
     ) {
-        // Serial number only: 1, 2, 3 ... 10, 11 ... 21 ...
         Text(
             text = serialNumber,
-            fontSize = 32.sp,
+            fontSize = 36.sp,
             fontWeight = FontWeight.Bold,
             fontFamily = FontFamily.SansSerif,
             color = textColor,

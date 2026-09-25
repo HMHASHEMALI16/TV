@@ -202,9 +202,13 @@ object StreamResolver {
         )
     )
 
-    // Highly reliable, universal 24/7 Bangla live HLS stream as final resilience fallback
-    private const val UNIVERSAL_FALLBACK_STREAM =
-        "https://raw.githubusercontent.com/amazeyourself/adaptive-streams/refs/heads/main/streams/in/YuppTV/ZeeBanglaHD.m3u8"
+    // NOTE: Many entries below currently reuse the same ATN-Bangla / Zee fallback URL
+    // for different channels. That means channel X may play channel Y's content when
+    // off the ISP (10.6.6.2) network. Replace each list with that channel's REAL
+    // official HLS URL before public release, or leave only ISP + error (no fake fallback).
+    // Universal fallback DISABLED on purpose: showing the SAME Zee stream on every
+    // failed channel confuses 70+ users more than a clear "Not available / RETRY" screen.
+    // If you want a last-resort stream, re-enable UNIVERSAL_FALLBACK_STREAM below.
 
     /**
      * Resolves a prioritized list of candidate stream configurations for playback.
@@ -212,8 +216,8 @@ object StreamResolver {
      * 1. ISP local network stream (http://10.6.6.2/play.php?id={channel.id}) in Auto-detect mode
      * 2. ISP local network stream with explicit HLS M3U8 MIME type
      * 3. ISP local network stream with explicit MPEG-TS MIME type
-     * 4. Direct online HLS stream backup
-     * 5. Universal resilient backup HLS stream
+     * 4. Direct online HLS stream backup (per-channel, if correct URL is configured)
+     * No universal fallback: wrong content is worse than a clear error for elderly users.
      */
     fun resolveCandidateStreams(channel: Channel): List<StreamCandidate> {
         val list = mutableListOf<StreamCandidate>()
@@ -236,9 +240,6 @@ object StreamResolver {
         directStreams[channel.id]?.forEach { onlineUrl ->
             list.add(StreamCandidate(url = onlineUrl, mimeType = "application/x-mpegURL", label = "Online Backup"))
         }
-
-        // 5. Universal fallback
-        list.add(StreamCandidate(url = UNIVERSAL_FALLBACK_STREAM, mimeType = "application/x-mpegURL", label = "Universal Backup"))
 
         return list
     }

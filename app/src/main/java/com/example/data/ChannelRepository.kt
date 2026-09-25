@@ -34,8 +34,14 @@ class ChannelRepository(private val context: Context) {
             if (bundled.isNotEmpty()) {
                 _channels.value = bundled
             } else {
-                // Fallback to hardcoded list of all 48 channels
-                _channels.value = getHardcodedChannels()
+                // 2. Try local cache (survives offline restarts + remote updates)
+                val cached = loadFromCache()
+                if (cached.isNotEmpty()) {
+                    _channels.value = cached
+                } else {
+                    // 3. Fallback to hardcoded list of all 48 channels
+                    _channels.value = getHardcodedChannels()
+                }
             }
 
             // 4. Try updating in background from remote server if reachable
@@ -129,7 +135,7 @@ class ChannelRepository(private val context: Context) {
     companion object {
         fun getHardcodedChannels(): List<Channel> {
             return listOf(
-                Channel("channel_31", "71", "http://10.6.6.2/play.php?id=channel_31"),
+                Channel("channel_31", "Ekattor TV", "http://10.6.6.2/play.php?id=channel_31"),
                 Channel("channel_32", "Ananda TV", "http://10.6.6.2/play.php?id=channel_32"),
                 Channel("channel_33", "Asian TV", "http://10.6.6.2/play.php?id=channel_33"),
                 Channel("channel_34", "ATN Bangla", "http://10.6.6.2/play.php?id=channel_34"),

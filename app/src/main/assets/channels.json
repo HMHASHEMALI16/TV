@@ -1,6 +1,6 @@
 {
   "channels": [
-    { "id": "channel_31", "name": "71", "streamUrl": "http://10.6.6.2/play.php?id=channel_31" },
+    { "id": "channel_31", "name": "Ekattor TV", "streamUrl": "http://10.6.6.2/play.php?id=channel_31" },
     { "id": "channel_32", "name": "Ananda TV", "streamUrl": "http://10.6.6.2/play.php?id=channel_32" },
     { "id": "channel_33", "name": "Asian TV", "streamUrl": "http://10.6.6.2/play.php?id=channel_33" },
     { "id": "channel_34", "name": "ATN Bangla", "streamUrl": "http://10.6.6.2/play.php?id=channel_34" },

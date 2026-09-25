@@ -25,10 +25,10 @@ import kotlinx.coroutines.launch
 
 sealed interface PlaybackState {
     object Idle : PlaybackState
-    data class Loading(val message: String = "Starting TV...") : PlaybackState
+    data class Loading(val message: String = "Loading...") : PlaybackState
     object Playing : PlaybackState
     object NoStream : PlaybackState
-    data class Error(val message: String = "Channel unavailable") : PlaybackState
+    data class Error(val message: String = "Not available. Press RETRY or BACK.") : PlaybackState
 }
 
 @OptIn(UnstableApi::class)
@@ -39,7 +39,8 @@ class PlayerManager(private val context: Context) {
     private var currentCandidates: List<StreamCandidate> = emptyList()
     private var currentCandidateIndex: Int = 0
 
-    private val scope = CoroutineScope(Dispatchers.Main + Job())
+    private val supervisor = Job()
+    private val scope = CoroutineScope(Dispatchers.Main + supervisor)
     private var candidateTimeoutJob: Job? = null
 
     private val _playbackState = MutableStateFlow<PlaybackState>(PlaybackState.Idle)
@@ -133,7 +134,7 @@ class PlayerManager(private val context: Context) {
     private fun tryPlayCurrentCandidate() {
         if (currentCandidateIndex >= currentCandidates.size) {
             exoPlayer?.stop()
-            _playbackState.value = PlaybackState.Error("Channel unavailable")
+            _playbackState.value = PlaybackState.Error("Not available. Press RETRY or BACK.")
             return
         }
 
@@ -158,10 +159,11 @@ class PlayerManager(private val context: Context) {
             player.prepare()
             player.play()
 
-            // Guard against silent socket hangs with generous 10s window for ISP buffer
+            // Guard against silent socket hangs: 7s per candidate is enough for
+            // elderly users (fast zapping). Old 10s x 5 candidates = ~50s black screen.
             candidateTimeoutJob?.cancel()
             candidateTimeoutJob = scope.launch {
-                delay(10000)
+                delay(7000)
                 if (_playbackState.value !is PlaybackState.Playing) {
                     Log.i("PlayerManager", "Candidate $currentCandidateIndex (${candidate.label}) timed out, switching to next...")
                     tryNextCandidate()
@@ -179,7 +181,7 @@ class PlayerManager(private val context: Context) {
             tryPlayCurrentCandidate()
         } else {
             exoPlayer?.stop()
-            _playbackState.value = PlaybackState.Error("Channel unavailable")
+            _playbackState.value = PlaybackState.Error("Not available. Press RETRY or BACK.")
         }
     }
 
@@ -203,6 +205,7 @@ class PlayerManager(private val context: Context) {
         candidateTimeoutJob = null
         exoPlayer?.release()
         exoPlayer = null
+        supervisor.cancel()
         _playbackState.value = PlaybackState.Idle
     }
 }

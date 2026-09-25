@@ -120,7 +120,7 @@ fun PlayerScreen(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Loading State: Clean spinner with ONLY serial number (no channel name, no guide text)
+        // Loading: ONLY big number. As simple as possible.
         if (playbackState is PlaybackState.Loading) {
             Box(
                 modifier = Modifier
@@ -141,7 +141,7 @@ fun PlayerScreen(
                     Spacer(modifier = Modifier.height(28.dp))
                     Text(
                         text = serialNumber,
-                        fontSize = 44.sp,
+                        fontSize = 48.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
                         fontFamily = FontFamily.SansSerif,
@@ -151,7 +151,7 @@ fun PlayerScreen(
             }
         }
 
-        // No Stream State: Minimal number & retry action (no on-screen back button, universal back handles return)
+        // No Stream: ONLY number + RETRY
         if (playbackState is PlaybackState.NoStream) {
             Box(
                 modifier = Modifier
@@ -167,7 +167,7 @@ fun PlayerScreen(
                 ) {
                     Text(
                         text = serialNumber,
-                        fontSize = 54.sp,
+                        fontSize = 60.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
                         fontFamily = FontFamily.SansSerif
@@ -191,7 +191,7 @@ fun PlayerScreen(
             }
         }
 
-        // Error State: Minimal number & retry action (no guide text, no on-screen back button)
+        // Error: ONLY number + RETRY
         if (playbackState is PlaybackState.Error) {
             Box(
                 modifier = Modifier
@@ -206,7 +206,7 @@ fun PlayerScreen(
                 ) {
                     Text(
                         text = serialNumber,
-                        fontSize = 54.sp,
+                        fontSize = 60.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
                         fontFamily = FontFamily.SansSerif
@@ -230,7 +230,7 @@ fun PlayerScreen(
             }
         }
 
-        // Brief Serial Number Overlay on channel switch/tap (ONLY serial number, no TV name, no LIVE text, no guide text)
+        // Brief number overlay only (no name, as requested)
         AnimatedVisibility(
             visible = overlayVisible && playbackState !is PlaybackState.NoStream && playbackState !is PlaybackState.Error,
             enter = fadeIn(),

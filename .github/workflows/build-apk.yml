@@ -1,8 +1,9 @@
-name: Build APK
+name: Build TV APK
 
 on:
   push:
     branches: [ main ]
+    tags: [ 'v*' ]
   workflow_dispatch:
 
 jobs:
@@ -19,25 +20,57 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Ensure Gradle wrapper exists
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Bootstrap Gradle wrapper if missing
+        # Repo currently has only gradle/wrapper/*.properties, no gradlew jar.
+        # Download official Gradle and generate wrapper so ./gradlew always works.
         run: |
+          chmod +x gradlew 2>/dev/null || true
           if [ ! -f "./gradlew" ]; then
-            if [ -f "gradle/wrapper/gradle-wrapper.properties" ]; then
-              V=$(grep -oP 'gradle-\K[0-9.]+(?=-bin|-all)' gradle/wrapper/gradle-wrapper.properties)
-              gradle wrapper --gradle-version="$V"
-            else
-              gradle wrapper
-            fi
+            V=$(grep -oE 'gradle-[0-9.]+' gradle/wrapper/gradle-wrapper.properties | head -1 | cut -d- -f2)
+            if [ -z "$V" ]; then V="9.3.1"; fi
+            echo "Bootstrapping Gradle wrapper v$V ..."
+            wget -q "https://services.gradle.org/distributions/gradle-${V}-bin.zip" -O /tmp/gradle.zip
+            unzip -q /tmp/gradle.zip -d /tmp
+            /tmp/gradle-${V}/bin/gradle wrapper --gradle-version="$V"
           fi
           chmod +x gradlew
+          ./gradlew --version
 
-      - name: Build debug APK
-        run: ./gradlew assembleDebug --stacktrace
+      - name: Build debug + release APKs (debug-signed, installable for testing)
+        run: ./gradlew assembleDebug assembleRelease --stacktrace
 
-      - name: Create Release with APK
+      - name: Rename APKs to TV
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/debug/app-debug.apk dist/TV-v${{ github.run_number }}-debug.apk || true
+          cp app/build/outputs/apk/release/app-release.apk dist/TV-v${{ github.run_number }}-release.apk || true
+          ls -lh dist/ app/build/outputs/apk/debug/ app/build/outputs/apk/release/ || true
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: TV-APKs-${{ github.run_number }}
+          path: dist/*.apk
+
+      # Only create a GitHub Release on version tags (v1.0, v1.1...), NOT on every push.
+      # To release: git tag v1.2; git push origin v1.2
+      - name: Create GitHub Release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: build-${{ github.run_number }}
-          files: app/build/outputs/apk/debug/app-debug.apk
+          files: dist/*.apk
+          generate_release_notes: true
+          body: |
+            TV app - super simple for 70+ users. Only numbers 1,2,3...
+
+            Install:
+            1. Download TV-*-release.apk (or debug) on phone / TV.
+            2. Allow "Install unknown apps" when asked.
+            3. Open TV -> press a number -> TV starts. UP/DOWN = change channel, BACK = list.
+
+            Note: primary streams use ISP http://10.6.6.2 (works on your home WiFi).
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

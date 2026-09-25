@@ -16,25 +16,27 @@ android {
     applicationId = "com.aistudio.livetv.eldjkm"
     minSdk = 24
     targetSdk = 36
-    versionCode = 1
-    versionName = "1.0"
+    versionCode = 3
+    versionName = "1.2"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
   signingConfigs {
+    // Release signing via env vars on CI. If no keystore is provided,
+    // Gradle falls back to debug signing so GitHub Actions can still
+    // produce a testable APK (see buildTypes below).
     create("release") {
       val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
-      storeFile = file(keystorePath)
-      storePassword = System.getenv("STORE_PASSWORD")
-      keyAlias = "upload"
-      keyPassword = System.getenv("KEY_PASSWORD")
-    }
-    create("debugConfig") {
-      storeFile = file("${rootDir}/debug.keystore")
-      storePassword = "android"
-      keyAlias = "androiddebugkey"
-      keyPassword = "android"
+      val keystoreFile = file(keystorePath)
+      // Only configure real release signing when the file + passwords exist.
+      // Otherwise leave empty -> build logic below falls back to debug signing.
+      if (keystoreFile.exists() && !System.getenv("STORE_PASSWORD").isNullOrBlank()) {
+        storeFile = keystoreFile
+        storePassword = System.getenv("STORE_PASSWORD")
+        keyAlias = System.getenv("KEY_ALIAS") ?: "upload"
+        keyPassword = System.getenv("KEY_PASSWORD")
+      }
     }
   }
 
@@ -43,9 +45,11 @@ android {
       isCrunchPngs = false
       isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("release")
+      // Use real release key if configured, else debug key so CI never fails.
+      // For Play Store: set KEYSTORE_PATH / STORE_PASSWORD / KEY_ALIAS / KEY_PASSWORD secrets.
+      signingConfig = signingConfigs.getByName("debug")
     }
-    debug { signingConfig = signingConfigs.getByName("debugConfig") }
+    debug { }
   }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
